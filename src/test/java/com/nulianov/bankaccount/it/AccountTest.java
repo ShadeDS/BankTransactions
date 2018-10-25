@@ -4,6 +4,9 @@ package com.nulianov.bankaccount.it;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.google.gson.Gson;
+import com.nulianov.bankaccount.domain.BankTransactionDetails;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,38 +17,47 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class AccountTest {
+    private static final String amount = "5";
+    private static final BankTransactionDetails transactionDetails = new BankTransactionDetails(new BigDecimal(amount), Instant.now().toEpochMilli());
+
     @Autowired
     private MockMvc mvc;
 
     @Test
     public void getBalance() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/account/balance").accept(MediaType.APPLICATION_JSON))
+        mvc.perform(MockMvcRequestBuilders.get("/account/balance"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(equalTo("balance")));
+                .andExpect(content().string("0"));
     }
 
     @Test
     public void getStatement() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/account/statement").accept(MediaType.APPLICATION_JSON))
+        mvc.perform(MockMvcRequestBuilders.get("/account/statement"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(equalTo("statement")));
+                .andExpect(content().string("[]"));
     }
 
     @Test
     public void makeDeposit() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.post("/account/deposit").accept(MediaType.APPLICATION_JSON))
+        String body = new Gson().toJson(transactionDetails);
+        mvc.perform(MockMvcRequestBuilders.post("/account/deposit").content(body).contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(content().string(equalTo("deposit")));
+                .andExpect(content().string(equalTo(amount)));
     }
 
     @Test
     public void makeWithdraw() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.post("/account/withdraw").accept(MediaType.APPLICATION_JSON))
+        String body = new Gson().toJson(transactionDetails);
+        mvc.perform(MockMvcRequestBuilders.post("/account/withdraw").content(body).contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(content().string(equalTo("withdraw")));
+                .andExpect(content().string(equalTo(amount)));
     }
 }

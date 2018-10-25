@@ -2,11 +2,14 @@ package com.nulianov.bankaccount.domain;
 
 import java.math.BigDecimal;
 
-public class BankTransaction {
+public class BankTransactionDetails {
     private BigDecimal amount;
     private long timeStampMillis;
 
-    public BankTransaction(BigDecimal amount, long timeStampMillis) {
+    public BankTransactionDetails() {
+    }
+
+    public BankTransactionDetails(BigDecimal amount, long timeStampMillis) {
         this.amount = amount;
         this.timeStampMillis = timeStampMillis;
     }

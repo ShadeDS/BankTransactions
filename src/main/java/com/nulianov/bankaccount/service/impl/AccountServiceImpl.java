@@ -1,31 +1,39 @@
 package com.nulianov.bankaccount.service.impl;
 
-import com.nulianov.bankaccount.domain.BankTransaction;
+import com.nulianov.bankaccount.domain.BankTransactionDetails;
 import com.nulianov.bankaccount.service.AccountService;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class AccountServiceImpl implements AccountService {
 
     @Override
-    public String getBalance() {
-        return "balance";
+    public BigDecimal getBalance() {
+        return new BigDecimal(0);
     }
 
     @Override
-    public String getStatement() {
-        return "statement";
+    public List<BankTransactionDetails> getStatement() {
+        return new ArrayList<>();
     }
 
     @Override
-    public String deposit() {
-        return "deposit";
+    public BigDecimal deposit(BankTransactionDetails transactionDetails) throws Exception {
+        if (transactionDetails.getAmount() == null || transactionDetails.getAmount().signum() < 0) {
+            throw new Exception("Incorrect amount money to deposit");
+        }
+        return transactionDetails.getAmount();
     }
 
     @Override
-    public String withdraw() {
-        return "withdraw";
+    public BigDecimal withdraw(BankTransactionDetails transactionDetails) throws Exception {
+        if (transactionDetails.getAmount() == null || transactionDetails.getAmount().signum() < 0) {
+            throw new Exception("Incorrect amount money to withdraw");
+        }
+        return transactionDetails.getAmount();
     }
 }

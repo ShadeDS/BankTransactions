@@ -1,6 +1,6 @@
 package com.nulianov.bankaccount.service;
 
-import com.nulianov.bankaccount.domain.BankTransaction;
+import com.nulianov.bankaccount.domain.BankTransactionDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -8,11 +8,11 @@ import java.util.List;
 
 @Service
 public interface AccountService {
-    String getBalance();
+    BigDecimal getBalance();
 
-    String getStatement();
+    List<BankTransactionDetails> getStatement();
 
-    String deposit();
+    BigDecimal deposit(BankTransactionDetails transactionDetails) throws Exception;
 
-    String withdraw();
+    BigDecimal withdraw(BankTransactionDetails transactionDetails) throws Exception;
 }

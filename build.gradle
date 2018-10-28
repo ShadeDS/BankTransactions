@@ -23,6 +23,9 @@ repositories {
 }
 
 dependencies {
+    compile "com.h2database:h2:1.4.197"
+    compile "org.springframework.boot:spring-boot-starter-data-jpa:2.0.6.RELEASE"
+    compile "org.springframework.boot:spring-boot-starter-jdbc:2.0.6.RELEASE"
     compile "com.google.code.gson:gson:2.8.5"
     compile "org.springframework.boot:spring-boot-starter-web:2.0.6.RELEASE"
     testCompile "org.springframework.boot:spring-boot-starter-test:2.0.6.RELEASE"

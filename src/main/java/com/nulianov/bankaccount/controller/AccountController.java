@@ -1,11 +1,9 @@
 package com.nulianov.bankaccount.controller;
 
-import com.nulianov.bankaccount.domain.BankTransactionDetails;
+import com.nulianov.bankaccount.domain.TransactionDetails;
 import com.nulianov.bankaccount.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,21 +26,22 @@ public class AccountController {
     }
 
     @RequestMapping(value = "/statement", method = RequestMethod.GET)
-    public ResponseEntity<List<BankTransactionDetails>> statement() {
+    public ResponseEntity<List<TransactionDetails>> statement() {
         return new ResponseEntity<>(accountService.getStatement(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/deposit", method = RequestMethod.POST)
-    public ResponseEntity<BigDecimal> deposit(@RequestBody BankTransactionDetails transactionDetails) {
+    public ResponseEntity<BigDecimal> deposit(@RequestBody TransactionDetails transactionDetails) {
         try {
             return new ResponseEntity<>(accountService.deposit(transactionDetails), HttpStatus.OK);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
     @RequestMapping(value = "/withdraw", method = RequestMethod.POST)
-    public ResponseEntity<BigDecimal> withdraw(@RequestBody BankTransactionDetails transactionDetails) {
+    public ResponseEntity<BigDecimal> withdraw(@RequestBody TransactionDetails transactionDetails) {
         try {
             return new ResponseEntity<>(accountService.withdraw(transactionDetails), HttpStatus.OK);
         } catch (Exception e) {

@@ -22,9 +22,9 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
     @Override
     public Optional<String> login(String username, String password) {
-        Account account = accountRepository.findByUsername(username);
-        if (account != null) {
-            if (passwordEncoder.matches(password, account.getPassword())) {
+        Optional<Account> account = accountRepository.findByUsername(username);
+        if (account.isPresent()) {
+            if (passwordEncoder.matches(password, account.get().getPassword())) {
                 String id = UUID.randomUUID().toString();
                 tokenRepository.put(id, username);
                 return Optional.of(id);
@@ -35,7 +35,7 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
 
     @Override
     public Optional<Account> findByToken(String token) {
-        return Optional.of(accountRepository.findByUsername(tokenRepository.get(token)));
+        return accountRepository.findByUsername(tokenRepository.get(token));
     }
 
     @Override

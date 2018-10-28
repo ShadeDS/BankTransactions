@@ -8,9 +8,9 @@ import java.util.List;
 
 @Service
 public interface AccountService {
-    BigDecimal getBalance();
+    BigDecimal getBalance(String username) throws Exception;
 
-    List<TransactionDetails> getStatement();
+    List<TransactionDetails> getStatement(String username) throws Exception;
 
     BigDecimal deposit(TransactionDetails transactionDetails) throws Exception;
 

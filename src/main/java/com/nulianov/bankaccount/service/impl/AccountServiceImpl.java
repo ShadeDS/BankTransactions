@@ -8,13 +8,10 @@ import com.nulianov.bankaccount.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 
 public class AccountServiceImpl implements AccountService {
-    private static final String username = "john";
-
     @Autowired
     private AccountRepository accountRepository;
 
@@ -22,22 +19,20 @@ public class AccountServiceImpl implements AccountService {
     private TransactionDetailsRepository transactionDetailsRepository;
 
     @Override
-    public BigDecimal getBalance() {
-        return accountRepository.findByUsername(username).getBalance();
+    public BigDecimal getBalance(String username) throws Exception {
+        return accountRepository.findByUsername(username).orElseThrow(() -> new Exception("User " + username + " doesn't exist")).getBalance();
     }
 
     @Override
-    public List<TransactionDetails> getStatement() {
-        Account account = accountRepository.findByUsername(username);
-        System.out.println("Found user with name " + username + " and id " + account.getId());
-        List<TransactionDetails> td = transactionDetailsRepository.findByUserId(account.getId());
+    public List<TransactionDetails> getStatement(String username) {
+        List<TransactionDetails> td = transactionDetailsRepository.findByUserName(username);
         System.out.println("Found transfers for user with name " + username + ": " + td);
         return td;
     }
 
     @Override
     public BigDecimal deposit(TransactionDetails transactionDetails) throws Exception {
-        Account account = accountRepository.findById(transactionDetails.getUserId()).orElseThrow(() -> new Exception("User with id " + transactionDetails.getId() + " doesn't exist"));
+        Account account = accountRepository.findByUsername(transactionDetails.getUserName()).orElseThrow(() -> new Exception("User " + transactionDetails.getUserName() + " doesn't exist"));
         BigDecimal currentBalance = account.deposit(transactionDetails.getAmount());
         if (transactionDetails.getTimeStampMillis() == 0) {
             transactionDetails.setCurrentTime();
@@ -49,7 +44,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public BigDecimal withdraw(TransactionDetails transactionDetails) throws Exception {
-        Account account = accountRepository.findById(transactionDetails.getUserId()).orElseThrow(() -> new Exception("User with id " + transactionDetails.getId() + " doesn't exist"));
+        Account account = accountRepository.findByUsername(transactionDetails.getUserName()).orElseThrow(() -> new Exception("User " + transactionDetails.getUserName() + " doesn't exist"));
         BigDecimal currentBalance = account.withdraw(transactionDetails.getAmount());
         if (transactionDetails.getTimeStampMillis() == 0) {
             transactionDetails.setCurrentTime();

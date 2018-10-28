@@ -13,7 +13,7 @@ public class TransactionDetails {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
 
-    private Long userId;
+    private String userName;
     private BigDecimal amount;
     private long timeStampMillis;
 
@@ -36,12 +36,12 @@ public class TransactionDetails {
         return id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public void setCurrentTime(){

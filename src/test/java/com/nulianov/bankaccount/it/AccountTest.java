@@ -12,6 +12,7 @@ import com.nulianov.bankaccount.domain.Account;
 import com.nulianov.bankaccount.domain.TransactionDetails;
 import com.nulianov.bankaccount.repository.AccountRepository;
 import com.nulianov.bankaccount.repository.TransactionDetailsRepository;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,11 +65,21 @@ public class AccountTest {
         accountRepository.save(userToDeposit);
         accountRepository.save(userToWithdraw);
         deposit.setCurrentTime();
-        deposit.setUserId(accountRepository.findByUsername(userToDeposit.getUsername()).getId());
+        deposit.setUserName(userToDeposit.getUsername());
         transactionDetailsRepository.save(deposit);
 
         withdraw.setCurrentTime();
-        withdraw.setUserId(accountRepository.findByUsername(userToWithdraw.getUsername()).getId());
+        withdraw.setUserName(userToWithdraw.getUsername());
+        transactionDetailsRepository.save(withdraw);
+    }
+
+    @After
+    public void tearDown() {
+        accountRepository.delete(userToDeposit);
+        accountRepository.delete(userToWithdraw);
+
+        transactionDetailsRepository.delete(deposit);
+        transactionDetailsRepository.delete(withdraw);
     }
 
     @Test
@@ -82,15 +93,14 @@ public class AccountTest {
 
     @Test
     public void getStatementWithDeposit() throws Exception {
-        String token = auth(userToDeposit.getUsername(), userToDepositPassword);
-        MvcResult result = mvc.perform(
-                MockMvcRequestBuilders.get("/account/statement")
-                        .header(AUTHORIZATION, "Bearer " + token)
-        ).andExpect(status().isOk()).andReturn();
-        Type listType = new TypeToken<ArrayList<TransactionDetails>>(){}.getType();
-        List<TransactionDetails> statement = new Gson().fromJson(result.getResponse().getContentAsString(), listType);
-
+        List<TransactionDetails> statement = getStatement(userToDeposit, userToDepositPassword);
         Assert.assertEquals(deposit.getAmount(), statement.get(0).getAmount());
+    }
+
+    @Test
+    public void getStatementWithWithdraw() throws Exception {
+        List<TransactionDetails> statement = getStatement(userToWithdraw, userToWithdrawPassword);
+        Assert.assertEquals(withdraw.getAmount(), statement.get(0).getAmount());
     }
 
     @Test
@@ -124,5 +134,15 @@ public class AccountTest {
                 .param("username",username).param("password", password)
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn().getResponse().getContentAsString();
+    }
+
+    private List<TransactionDetails> getStatement(Account account, String accountPassword) throws Exception {
+        String token = auth(account.getUsername(), accountPassword);
+        MvcResult result = mvc.perform(
+                MockMvcRequestBuilders.get("/account/statement")
+                        .header(AUTHORIZATION, "Bearer " + token)
+        ).andExpect(status().isOk()).andReturn();
+        Type listType = new TypeToken<ArrayList<TransactionDetails>>(){}.getType();
+        return new Gson().fromJson(result.getResponse().getContentAsString(), listType);
     }
 }

@@ -6,5 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface TransactionDetailsRepository extends CrudRepository<TransactionDetails, Long> {
-    List<TransactionDetails> findByUserId(Long id);
+    List<TransactionDetails> findByUserName(String username);
 }

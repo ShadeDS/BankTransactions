@@ -2,6 +2,7 @@ package com.nulianov.bankaccount.it;
 
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -33,13 +35,18 @@ import java.util.List;
 @SpringBootTest
 @AutoConfigureMockMvc
 public class AccountTest {
-    private static final Account userToDeposit = new Account("john", "doe", new BigDecimal(100));
-    private static final Account userToWithdraw = new Account("mike", "doe", new BigDecimal(100));
+    private static Account userToDeposit;
+    private static Account userToWithdraw;
+    private static final String userToDepositPassword = "doe";
+    private static final String userToWithdrawPassword = "12345";
     private static final String amount = "5.00";
     private static final String amountAfterDeposit = "105.00";
     private static final String amountAfterWithdraw = "95.00";
     private static final TransactionDetails deposit = new TransactionDetails(new BigDecimal(amount));
     private static final TransactionDetails withdraw = new TransactionDetails(new BigDecimal(amount));
+
+    @Autowired
+    private PasswordEncoder encoder;
 
     @Autowired
     private MockMvc mvc;
@@ -52,6 +59,8 @@ public class AccountTest {
 
     @Before
     public void setUp() {
+        userToDeposit = new Account("john", encoder.encode(userToDepositPassword), new BigDecimal(100));
+        userToWithdraw = new Account("mike", encoder.encode(userToWithdrawPassword), new BigDecimal(100));
         accountRepository.save(userToDeposit);
         accountRepository.save(userToWithdraw);
         deposit.setCurrentTime();
@@ -64,15 +73,20 @@ public class AccountTest {
 
     @Test
     public void getBalance() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/account/balance"))
+        String token = auth(userToDeposit.getUsername(), userToDepositPassword);
+        mvc.perform(MockMvcRequestBuilders.get("/account/balance")
+        .header(AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(content().string("100.00"));
     }
 
     @Test
     public void getStatementWithDeposit() throws Exception {
-        MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/account/statement"))
-                .andExpect(status().isOk()).andReturn();
+        String token = auth(userToDeposit.getUsername(), userToDepositPassword);
+        MvcResult result = mvc.perform(
+                MockMvcRequestBuilders.get("/account/statement")
+                        .header(AUTHORIZATION, "Bearer " + token)
+        ).andExpect(status().isOk()).andReturn();
         Type listType = new TypeToken<ArrayList<TransactionDetails>>(){}.getType();
         List<TransactionDetails> statement = new Gson().fromJson(result.getResponse().getContentAsString(), listType);
 
@@ -81,20 +95,34 @@ public class AccountTest {
 
     @Test
     public void makeDeposit() throws Exception {
-
+        String token = auth(userToDeposit.getUsername(), userToDepositPassword);
         String body = new Gson().toJson(deposit);
         System.out.println(body);
-        mvc.perform(MockMvcRequestBuilders.post("/account/deposit").content(body).contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andExpect(content().string(equalTo(amountAfterDeposit)));
+        mvc.perform(
+                MockMvcRequestBuilders.post("/account/deposit")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .header(AUTHORIZATION, "Bearer " + token)
+        ).andExpect(status().isOk()).andExpect(content().string(equalTo(amountAfterDeposit)));
     }
 
     @Test
     public void makeWithdraw() throws Exception {
+        String token = auth(userToWithdraw.getUsername(), userToWithdrawPassword);
         String body = new Gson().toJson(withdraw);
         System.out.println(body);
-        mvc.perform(MockMvcRequestBuilders.post("/account/withdraw").content(body).contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andExpect(content().string(equalTo(amountAfterWithdraw)));
+        mvc.perform(
+                MockMvcRequestBuilders.post("/account/withdraw")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .header(AUTHORIZATION, "Bearer " + token)
+        ).andExpect(status().isOk()).andExpect(content().string(equalTo(amountAfterWithdraw)));
+    }
+
+    private String auth(String username, String password) throws Exception {
+        return mvc.perform(MockMvcRequestBuilders.post("/auth/login")
+                .param("username",username).param("password", password)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andReturn().getResponse().getContentAsString();
     }
 }

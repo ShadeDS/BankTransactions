@@ -83,6 +83,42 @@ public class AccountTest {
     }
 
     @Test
+    public void sync() throws Exception {
+        Thread balanceThread = new Thread(() -> {
+            try {
+                getBalance();
+            } catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        });
+
+        Thread withdrawThread = new Thread(() -> {
+            try {
+                makeWithdraw();
+            } catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        });
+
+        Thread depositThread = new Thread(() -> {
+            try {
+                makeDeposit();
+            } catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        });
+
+
+        balanceThread.start();
+        withdrawThread.start();
+        depositThread.start();
+
+        balanceThread.join();
+        withdrawThread.join();
+        depositThread.join();
+    }
+
+    @Test
     public void getBalance() throws Exception {
         String token = auth(userToDeposit.getUsername(), userToDepositPassword);
         mvc.perform(MockMvcRequestBuilders.get("/account/balance")

@@ -2,6 +2,8 @@ package com.nulianov.bankaccount.controller;
 
 import com.nulianov.bankaccount.domain.Account;
 import com.nulianov.bankaccount.domain.TransactionDetails;
+import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransaction;
+import com.nulianov.bankaccount.exception.InsufficientFundsException;
 import com.nulianov.bankaccount.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.security.Principal;
@@ -33,7 +36,7 @@ public class AccountController {
         try {
             logger.info("Received request to get balance for user: " + account.getUsername());
             return new ResponseEntity<>(accountService.getBalance(account.getUsername()), HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (EntityNotFoundException e) {
             logger.error("User {} was not found", account.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -44,7 +47,7 @@ public class AccountController {
         try {
             logger.info("Received request to get statement for user: " + account.getUsername());
             return new ResponseEntity<>(accountService.getStatement(account.getUsername()), HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (EntityNotFoundException e) {
             logger.error("User {} was not found", account.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -57,9 +60,12 @@ public class AccountController {
             logger.info("Received request to deposit for user: " + account.getUsername());
             transactionDetails.setUserName(account.getUsername());
             return new ResponseEntity<>(accountService.deposit(transactionDetails), HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (EntityNotFoundException e) {
+            logger.error("User {} was not found", account.getUsername());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (IllegalAmountOfMoneyForTransaction e) {
             logger.error("Exception occurred while processing deposit for user {}: {}", account.getUsername(), e.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
     }
 
@@ -70,7 +76,13 @@ public class AccountController {
             logger.info("Received request to withdraw for user: " + account.getUsername());
             transactionDetails.setUserName(account.getUsername());
             return new ResponseEntity<>(accountService.withdraw(transactionDetails), HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (EntityNotFoundException e) {
+            logger.error("User {} was not found", account.getUsername());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (IllegalAmountOfMoneyForTransaction e) {
+            logger.error("Exception occurred while processing deposit for user {}: {}", account.getUsername(), e.getMessage());
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        } catch (InsufficientFundsException e) {
             logger.error("Exception occurred while processing deposit for user {}: {}", account.getUsername(), e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

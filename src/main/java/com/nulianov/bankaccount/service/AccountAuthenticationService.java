@@ -10,6 +10,4 @@ public interface AccountAuthenticationService {
     Optional<String> login(String username, String password);
 
     Optional<Account> findByToken(String token);
-
-    void logout(String token);
 }

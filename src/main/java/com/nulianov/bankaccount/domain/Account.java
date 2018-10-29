@@ -9,39 +9,39 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
 
 @Entity
-public class Account implements UserDetails {
+public class Account {
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
+    private UUID id;
 
-    @Column(unique=true)
-    private String username;
-
-    private String password;
+    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    private User user;
 
     private BigDecimal balance;
 
     public Account() {
     }
 
-    public Account(String username, String password, BigDecimal balance) {
-        this.username = username;
-        this.password = password;
+    public Account(UUID id, User user, BigDecimal balance) {
+        this.id = id;
+        this.user = user;
         this.balance = balance;
     }
 
-    public Long getId() {
+    public Account(User user, BigDecimal balance) {
+        generateId();
+        this.user = user;
+        this.balance = balance;
+    }
+
+    public UUID getId() {
         return id;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
+    public User getUser() {
+        return user;
     }
 
     public BigDecimal getBalance() {
@@ -61,35 +61,16 @@ public class Account implements UserDetails {
         if (amount == null || amount.signum() < 0) {
             throw new IllegalAmountOfMoneyForTransaction(amount);
         } else if (amount.compareTo(balance) > 0) {
-            throw new InsufficientFundsException(username);
+            throw new InsufficientFundsException(user.getUsername());
         } else {
             balance = balance.subtract(amount);
             return balance;
         }
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public void generateId() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
     }
 }

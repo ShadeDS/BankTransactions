@@ -1,7 +1,9 @@
 package com.nulianov.bankaccount.service.impl;
 
 import com.nulianov.bankaccount.domain.Account;
+import com.nulianov.bankaccount.domain.User;
 import com.nulianov.bankaccount.repository.AccountRepository;
+import com.nulianov.bankaccount.repository.UserRepository;
 import com.nulianov.bankaccount.service.AccountAuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +23,15 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
     PasswordEncoder passwordEncoder;
 
     @Autowired
-    AccountRepository accountRepository;
+    private UserRepository userRepository;
 
     @Override
     public Optional<String> login(String username, String password) {
         logger.debug("Check credentials for user {}", username);
-        Optional<Account> account = accountRepository.findByUsername(username);
-        if (account.isPresent()) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()) {
             logger.debug("User {} was found", username);
-            if (passwordEncoder.matches(password, account.get().getPassword())) {
+            if (passwordEncoder.matches(password, user.get().getPassword())) {
                 logger.debug("Credentials are correct, start to create token");
                 String id = UUID.randomUUID().toString();
                 tokenRepository.put(id, username);
@@ -42,8 +44,8 @@ public class AccountAuthenticationServiceImpl implements AccountAuthenticationSe
     }
 
     @Override
-    public Optional<Account> findByToken(String token) {
+    public Optional<User> findByToken(String token) {
         logger.debug("Try to find user by token {}", token);
-        return accountRepository.findByUsername(tokenRepository.get(token));
+        return userRepository.findByUsername(tokenRepository.get(token));
     }
 }

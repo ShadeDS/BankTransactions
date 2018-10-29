@@ -19,7 +19,7 @@ public class AccountEntityTest {
 
     @Before
     public void setUp() {
-        account = new Account("john", "doe", startBalance);
+        account = new Account(new User("john", "doe"), startBalance);
     }
 
     @Test(expected = IllegalAmountOfMoneyForTransaction.class)

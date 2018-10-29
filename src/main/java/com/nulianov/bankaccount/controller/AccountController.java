@@ -1,7 +1,7 @@
 package com.nulianov.bankaccount.controller;
 
-import com.nulianov.bankaccount.domain.Account;
 import com.nulianov.bankaccount.domain.TransactionDetails;
+import com.nulianov.bankaccount.domain.User;
 import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransaction;
 import com.nulianov.bankaccount.exception.InsufficientFundsException;
 import com.nulianov.bankaccount.service.AccountService;
@@ -10,18 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "/account")
@@ -32,58 +27,58 @@ public class AccountController {
     AccountService accountService;
 
     @RequestMapping(value = "/balance", method = RequestMethod.GET)
-    public ResponseEntity<BigDecimal> balance(@AuthenticationPrincipal final Account account) {
+    public ResponseEntity<BigDecimal> balance(@RequestParam("accountId") final UUID accountId,
+                                              @AuthenticationPrincipal final User user) {
         try {
-            logger.info("Received request to get balance for user: " + account.getUsername());
-            return new ResponseEntity<>(accountService.getBalance(account.getUsername()), HttpStatus.OK);
+            logger.info("Received request to get balance for user: {} and account {}", user.getUsername(), accountId);
+            return new ResponseEntity<>(accountService.getBalance(user.getUsername(), accountId), HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            logger.error("User {} was not found", account.getUsername());
+            logger.error("User {} was not found", user.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @RequestMapping(value = "/statement", method = RequestMethod.GET)
-    public ResponseEntity<List<TransactionDetails>> statement(@AuthenticationPrincipal final Account account) {
+    public ResponseEntity<List<TransactionDetails>> statement(@RequestParam("accountId") final UUID accountId,
+                                                              @AuthenticationPrincipal final User user) {
         try {
-            logger.info("Received request to get statement for user: " + account.getUsername());
-            return new ResponseEntity<>(accountService.getStatement(account.getUsername()), HttpStatus.OK);
+            logger.info("Received request to get statement for user: {} and account {}", user.getUsername(), accountId);
+            return new ResponseEntity<>(accountService.getStatement(user.getUsername(), accountId), HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            logger.error("User {} was not found", account.getUsername());
+            logger.error("User {} was not found", user.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @RequestMapping(value = "/deposit", method = RequestMethod.POST)
     public ResponseEntity<BigDecimal> deposit(@RequestBody TransactionDetails transactionDetails,
-                                              @AuthenticationPrincipal final Account account) {
+                                              @AuthenticationPrincipal final User user) {
         try {
-            logger.info("Received request to deposit for user: " + account.getUsername());
-            transactionDetails.setUserName(account.getUsername());
-            return new ResponseEntity<>(accountService.deposit(transactionDetails), HttpStatus.OK);
+            logger.info("Received request to deposit for user: " + user.getUsername());
+            return new ResponseEntity<>(accountService.deposit(user.getUsername(), transactionDetails), HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            logger.error("User {} was not found", account.getUsername());
+            logger.error("User {} was not found", user.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (IllegalAmountOfMoneyForTransaction e) {
-            logger.error("Exception occurred while processing deposit for user {}: {}", account.getUsername(), e.getMessage());
+            logger.error("Exception occurred while processing deposit for user {}: {}", user.getUsername(), e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
     }
 
     @RequestMapping(value = "/withdraw", method = RequestMethod.POST)
     public ResponseEntity<BigDecimal> withdraw(@RequestBody TransactionDetails transactionDetails,
-                                               @AuthenticationPrincipal final Account account) {
+                                               @AuthenticationPrincipal final User user) {
         try {
-            logger.info("Received request to withdraw for user: " + account.getUsername());
-            transactionDetails.setUserName(account.getUsername());
-            return new ResponseEntity<>(accountService.withdraw(transactionDetails), HttpStatus.OK);
+            logger.info("Received request to withdraw for user: " + user.getUsername());
+            return new ResponseEntity<>(accountService.withdraw(user.getUsername(), transactionDetails), HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            logger.error("User {} was not found", account.getUsername());
+            logger.error("User {} was not found", user.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (IllegalAmountOfMoneyForTransaction e) {
-            logger.error("Exception occurred while processing deposit for user {}: {}", account.getUsername(), e.getMessage());
+            logger.error("Exception occurred while processing deposit for user {}: {}", user.getUsername(), e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         } catch (InsufficientFundsException e) {
-            logger.error("Exception occurred while processing deposit for user {}: {}", account.getUsername(), e.getMessage());
+            logger.error("Exception occurred while processing deposit for user {}: {}", user.getUsername(), e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

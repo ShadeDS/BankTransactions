@@ -1,8 +1,6 @@
 package com.nulianov.bankaccount.configuration;
 
-import com.nulianov.bankaccount.service.AccountAuthenticationService;
 import com.nulianov.bankaccount.service.AccountService;
-import com.nulianov.bankaccount.service.impl.AccountAuthenticationServiceImpl;
 import com.nulianov.bankaccount.service.impl.AccountServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

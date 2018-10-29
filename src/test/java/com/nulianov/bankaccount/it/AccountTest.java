@@ -10,8 +10,10 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.nulianov.bankaccount.domain.Account;
 import com.nulianov.bankaccount.domain.TransactionDetails;
+import com.nulianov.bankaccount.domain.User;
 import com.nulianov.bankaccount.repository.AccountRepository;
 import com.nulianov.bankaccount.repository.TransactionDetailsRepository;
+import com.nulianov.bankaccount.repository.UserRepository;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,8 +38,10 @@ import java.util.List;
 @SpringBootTest
 @AutoConfigureMockMvc
 public class AccountTest {
-    private static Account userToDeposit;
-    private static Account userToWithdraw;
+    private User userToDeposit;
+    private User userToWithdraw;
+    private static Account accountToDeposit;
+    private static Account accountToWithdraw;
     private static final String userToDepositPassword = "doe";
     private static final String userToWithdrawPassword = "12345";
     private static final String amount = "5.00";
@@ -58,25 +62,37 @@ public class AccountTest {
     @Autowired
     private TransactionDetailsRepository transactionDetailsRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Before
     public void setUp() {
-        userToDeposit = new Account("john", encoder.encode(userToDepositPassword), new BigDecimal(100));
-        userToWithdraw = new Account("mike", encoder.encode(userToWithdrawPassword), new BigDecimal(100));
-        accountRepository.save(userToDeposit);
-        accountRepository.save(userToWithdraw);
+        userToDeposit = new User("john", encoder.encode(userToDepositPassword));
+        userToWithdraw = new User("mike", encoder.encode(userToWithdrawPassword));
+        userRepository.save(userToDeposit);
+        userRepository.save(userToWithdraw);
+
+
+        accountToDeposit = new Account(userToDeposit, new BigDecimal(100));
+        accountToWithdraw = new Account(userToWithdraw, new BigDecimal(100));
+        accountRepository.save(accountToDeposit);
+        accountRepository.save(accountToWithdraw);
+
         deposit.setCurrentTime();
-        deposit.setUserName(userToDeposit.getUsername());
+        deposit.setAccountId(accountToDeposit.getId());
         transactionDetailsRepository.save(deposit);
 
         withdraw.setCurrentTime();
-        withdraw.setUserName(userToWithdraw.getUsername());
+        withdraw.setAccountId(accountToWithdraw.getId());
         transactionDetailsRepository.save(withdraw);
     }
 
     @After
     public void tearDown() {
-        accountRepository.delete(userToDeposit);
-        accountRepository.delete(userToWithdraw);
+        accountRepository.delete(accountToDeposit);
+        accountRepository.delete(accountToWithdraw);
+        userRepository.delete(userToDeposit);
+        userRepository.delete(userToWithdraw);
 
         transactionDetailsRepository.delete(deposit);
         transactionDetailsRepository.delete(withdraw);
@@ -86,20 +102,21 @@ public class AccountTest {
     public void getBalance() throws Exception {
         String token = auth(userToDeposit.getUsername(), userToDepositPassword);
         mvc.perform(MockMvcRequestBuilders.get("/account/balance")
-        .header(AUTHORIZATION, "Bearer " + token))
+        .header(AUTHORIZATION, "Bearer " + token)
+        .param("accountId", accountToDeposit.getId().toString()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("100.00"));
     }
 
     @Test
     public void getStatementWithDeposit() throws Exception {
-        List<TransactionDetails> statement = getStatement(userToDeposit, userToDepositPassword);
+        List<TransactionDetails> statement = getStatement(userToDeposit, userToDepositPassword, accountToDeposit);
         Assert.assertEquals(deposit.getAmount(), statement.get(0).getAmount());
     }
 
     @Test
     public void getStatementWithWithdraw() throws Exception {
-        List<TransactionDetails> statement = getStatement(userToWithdraw, userToWithdrawPassword);
+        List<TransactionDetails> statement = getStatement(userToWithdraw, userToWithdrawPassword, accountToWithdraw);
         Assert.assertEquals(withdraw.getAmount(), statement.get(0).getAmount());
     }
 
@@ -136,11 +153,12 @@ public class AccountTest {
                 .andReturn().getResponse().getContentAsString();
     }
 
-    private List<TransactionDetails> getStatement(Account account, String accountPassword) throws Exception {
-        String token = auth(account.getUsername(), accountPassword);
+    private List<TransactionDetails> getStatement(User user, String accountPassword, Account account) throws Exception {
+        String token = auth(user.getUsername(), accountPassword);
         MvcResult result = mvc.perform(
                 MockMvcRequestBuilders.get("/account/statement")
                         .header(AUTHORIZATION, "Bearer " + token)
+                        .param("accountId", account.getId().toString())
         ).andExpect(status().isOk()).andReturn();
         Type listType = new TypeToken<ArrayList<TransactionDetails>>(){}.getType();
         return new Gson().fromJson(result.getResponse().getContentAsString(), listType);

@@ -1,11 +1,14 @@
 package com.nulianov.bankaccount.domain;
 
+import org.springframework.lang.NonNull;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 public class TransactionDetails {
@@ -13,7 +16,10 @@ public class TransactionDetails {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
 
-    private String userName;
+    @NonNull
+    private UUID accountId;
+
+    @NonNull
     private BigDecimal amount;
     private long timeStampMillis;
 
@@ -36,12 +42,12 @@ public class TransactionDetails {
         return id;
     }
 
-    public String getUserName() {
-        return userName;
+    public UUID getAccountId() {
+        return accountId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setAccountId(UUID accountId) {
+        this.accountId = accountId;
     }
 
     public void setCurrentTime(){

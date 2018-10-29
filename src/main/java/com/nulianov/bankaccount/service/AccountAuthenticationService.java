@@ -1,6 +1,6 @@
 package com.nulianov.bankaccount.service;
 
-import com.nulianov.bankaccount.domain.Account;
+import com.nulianov.bankaccount.domain.User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,5 +22,5 @@ public interface AccountAuthenticationService {
      * @param token token from request header
      * @return account linked with specified token
      */
-    Optional<Account> findByToken(String token);
+    Optional<User> findByToken(String token);
 }

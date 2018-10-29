@@ -20,7 +20,7 @@ public interface AccountAuthenticationService {
      * If received token is present in storage, returns correlated account,
      * returns empty optional otherwise
      * @param token token from request header
-     * @return account linked with specified token
+     * @return user linked with specified token
      */
     Optional<User> findByToken(String token);
 }

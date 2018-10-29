@@ -48,6 +48,13 @@ GET /account/balance
 Returns current balance for account
 
 
+#### Parameters
+
+|Type|Name|Description|Schema|
+|---|---|---|---|
+|**Path**|**accountId**  <br>*required*|Bank account id|uuid|
+
+
 #### Responses
 
 |HTTP Code|Description|Schema|
@@ -64,6 +71,13 @@ GET /account/statement
 
 #### Description
 Returns list of transactions for account
+
+
+#### Parameters
+
+|Type|Name|Description|Schema|
+|---|---|---|---|
+|**Path**|**accountId**  <br>*required*|Bank account id|uuid|
 
 
 #### Responses
@@ -121,3 +135,4 @@ Withdraws money from account, returns current balance
 |Name|Schema|
 |---|---|
 |**amount**  <br>*required*|BigDecimal|
+|**accountId**  <br>*required*|uuid|

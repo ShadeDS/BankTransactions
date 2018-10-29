@@ -16,6 +16,7 @@ public interface AccountService {
      * If account exists in storage, returns actual balance,
      * throws exception otherwise
      * @param username username of current logged user
+     * @param accountId id for bank account
      * @return user account balance
      * @throws EntityNotFoundException account was not found in storage
      */
@@ -25,6 +26,7 @@ public interface AccountService {
      * If account exists in storage, returns statement as list of transactions,
      * throws exception otherwise
      * @param username username of current logged users
+     * @param accountId id for bank account
      * @return list of transactions
      * @throws EntityNotFoundException account was not found in storage
      */

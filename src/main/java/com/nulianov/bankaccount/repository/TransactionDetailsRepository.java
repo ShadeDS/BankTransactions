@@ -6,5 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface TransactionDetailsRepository extends CrudRepository<TransactionDetails, Long> {
-    List<TransactionDetails> findByUserName(String username);
+    List<TransactionDetails> findByUserNameOrderByTimeStampMillis(String username);
 }

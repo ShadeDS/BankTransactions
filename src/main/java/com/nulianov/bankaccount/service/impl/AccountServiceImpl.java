@@ -35,7 +35,7 @@ public class AccountServiceImpl implements AccountService {
     public List<TransactionDetails> getStatement(String username) throws EntityNotFoundException {
         logger.debug("Get statement for user {}", username);
         accountRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User " + username + " doesn't exist"));
-        List<TransactionDetails> td = transactionDetailsRepository.findByUserName(username);
+        List<TransactionDetails> td = transactionDetailsRepository.findByUserNameOrderByTimeStampMillis(username);
         logger.debug("Found {} transfers for user {}", td.size(), username);
         return td;
     }

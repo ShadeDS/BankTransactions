@@ -10,6 +10,11 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Configuration
 public class MainConfig {
@@ -24,5 +29,14 @@ public class MainConfig {
         return builder
                 .setType(EmbeddedDatabaseType.H2)
                 .build();
+    }
+
+    @Bean
+    public List<ExecutorService> getExecutorsPool() {
+        List<ExecutorService> executors = new ArrayList<>();
+        for (int i = 0; i <= Runtime.getRuntime().availableProcessors(); i++) {
+            executors.add(Executors.newSingleThreadExecutor());
+        }
+        return executors;
     }
 }

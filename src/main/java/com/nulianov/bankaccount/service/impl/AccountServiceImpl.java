@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.*;
 
 
 public class AccountServiceImpl implements AccountService {
@@ -18,8 +19,17 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private TransactionDetailsRepository transactionDetailsRepository;
 
+    @Autowired
+    List<ExecutorService> executors;
+
     @Override
     public BigDecimal getBalance(String username) throws Exception {
+        Future<BigDecimal> result = executors.get(username.hashCode() % executors.size()).submit(() -> getBalanceInternal(username));
+
+        return result.get();
+    }
+
+    public BigDecimal getBalanceInternal(String username) throws Exception {
         return accountRepository.findByUsername(username).orElseThrow(() -> new Exception("User " + username + " doesn't exist")).getBalance();
     }
 

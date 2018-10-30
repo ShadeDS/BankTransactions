@@ -160,7 +160,7 @@ public class AccountTest {
     public void createNewAccount() throws Exception {
         String token = auth(userToDeposit.getUsername(), userToDepositPassword);
         String accountId = mvc.perform(
-                MockMvcRequestBuilders.post("/account/create")
+                MockMvcRequestBuilders.post("/account")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .header(AUTHORIZATION, "Bearer " + token)
         ).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();

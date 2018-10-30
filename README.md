@@ -158,7 +158,7 @@ Withdraws money from account, returns current balance
 
 ### Create new account
 ```
-POST /account/create
+POST /account
 ```
 
 

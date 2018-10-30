@@ -96,7 +96,7 @@ public class AccountController {
         }
     }
 
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<String> create(@AuthenticationPrincipal final User user) {
         logger.info("Received request to create new account for user: " + user.getUsername());
         try {

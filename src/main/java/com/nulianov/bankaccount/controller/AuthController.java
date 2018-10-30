@@ -33,6 +33,7 @@ public class AuthController {
             userService.register(user.getUsername(), user.getPassword());
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (BadCredentialsException e) {
+            logger.error("Error occurred while register user {}: {}", user.getUsername(), e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

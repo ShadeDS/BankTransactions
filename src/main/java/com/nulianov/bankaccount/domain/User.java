@@ -20,7 +20,7 @@ public class User implements UserDetails {
     @NonNull
     private String password;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", orphanRemoval=true)
     private List<Account> accounts;
 
     public User() {

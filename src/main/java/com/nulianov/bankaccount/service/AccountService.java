@@ -52,4 +52,12 @@ public interface AccountService {
      * @throws InsufficientFundsException account doesn't have sufficient funds to withdraw
      */
     BigDecimal withdraw(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, InsufficientFundsException;
+
+    /**
+     * Creates new account for provided user
+     * @param username name of user
+     * @return id of new account
+     * @throws EntityNotFoundException user was not found in storage
+     */
+    UUID create(String username) throws EntityNotFoundException;
 }

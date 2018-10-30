@@ -12,7 +12,7 @@ public class Account {
     @Id
     private UUID id;
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(optional = false)
     private User user;
 
     private BigDecimal balance;

@@ -83,6 +83,15 @@ public class AccountServiceImpl implements AccountService {
         return currentBalance;
     }
 
+    @Override
+    public UUID create(String username) throws EntityNotFoundException {
+        User currentUser = getCurrentUserFromStorage(username);
+        Account account = new Account(currentUser, new BigDecimal(0));
+        accountRepository.save(account);
+
+        return account.getId();
+    }
+
     private User getCurrentUserFromStorage(String username) throws EntityNotFoundException {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User " + username + " doesn't exist"));

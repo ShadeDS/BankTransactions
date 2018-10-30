@@ -14,7 +14,7 @@ REST API of Bank Transactions project
 
 ### Register
 ```
-POST /api/login
+POST /auth/register
 ```
 
 
@@ -39,7 +39,7 @@ Registers new user with provided credentials
 
 ### Login
 ```
-POST /api/login
+POST /auth/login
 ```
 
 
@@ -84,8 +84,8 @@ Returns current balance for account
 
 |HTTP Code|Description|Schema|
 |---|---|---|
-|**200**|Account was found in database|BigDecimal|
-|**404**|Account is not present in database|string|
+|**200**|Account was found in storage|BigDecimal|
+|**404**|Account is not present in storage|string|
 
 
 ### Get statement
@@ -110,7 +110,7 @@ Returns list of transactions for account
 |HTTP Code|Description|Schema|
 |---|---|---|
 |**200**|Account was found|List<[Transaction](#transaction)>|
-|**404**|Account is not present in database|string|
+|**404**|Account is not present in storage|string|
 
 
 ### Deposit money to account
@@ -128,7 +128,7 @@ Deposits money into an account, returns current balance
 |HTTP Code|Description|Schema|
 |---|---|---|
 |**200**|Deposit was completed successfully|BigDecimal|
-|**404**|Account is not present in database|string|
+|**404**|Account is not present in storage|string|
 |**406**|Illegal amount money to process|string|
 
 
@@ -148,8 +148,26 @@ Withdraws money from account, returns current balance
 |---|---|---|
 |**200**|Withdraw was completed successfully|BigDecimal|
 |**400**|Account has no sufficient funds to withdraw|string|
-|**404**|Account is not present in database|string|
+|**404**|Account is not present in storage|string|
 |**406**|Illegal amount money to process|string|
+
+
+### Create new account
+```
+POST /account/create
+```
+
+
+#### Description
+Creates new account for current user
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**201**|Account was created successfully|uuid|
+|**404**|User is not present in storage|string|
 
 
 ## Definitions

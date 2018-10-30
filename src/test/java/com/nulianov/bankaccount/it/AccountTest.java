@@ -33,6 +33,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -42,6 +43,7 @@ public class AccountTest {
     private User userToWithdraw;
     private static Account accountToDeposit;
     private static Account accountToWithdraw;
+    private static Account createdAccount;
     private static final String userToDepositPassword = "doe";
     private static final String userToWithdrawPassword = "12345";
     private static final String amount = "5.00";
@@ -89,6 +91,10 @@ public class AccountTest {
 
     @After
     public void tearDown() {
+        if (createdAccount != null) {
+            accountRepository.delete(createdAccount);
+            createdAccount = null;
+        }
         accountRepository.delete(accountToDeposit);
         accountRepository.delete(accountToWithdraw);
         userRepository.delete(userToDeposit);
@@ -142,6 +148,27 @@ public class AccountTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .header(AUTHORIZATION, "Bearer " + token)
         ).andExpect(status().isOk()).andExpect(content().string(equalTo(amountAfterWithdraw)));
+    }
+
+    @Test
+    public void createNewAccount() throws Exception {
+        String token = auth(userToDeposit.getUsername(), userToDepositPassword);
+        String accountId = mvc.perform(
+                MockMvcRequestBuilders.post("/account/create")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .header(AUTHORIZATION, "Bearer " + token)
+        ).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+
+        System.out.println(accountId);
+
+        createdAccount = new Account(UUID.fromString(accountId), userToDeposit, new BigDecimal(0));
+
+        mvc.perform(MockMvcRequestBuilders.get("/account/balance")
+                .header(AUTHORIZATION, "Bearer " + token)
+                .param("accountId", accountId))
+                .andExpect(status().isOk())
+                .andExpect(content().string("0.00"));
+
     }
 
     private String auth(String username, String password) throws Exception {

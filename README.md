@@ -12,6 +12,31 @@ REST API of Bank Transactions project
 ## Paths
 
 
+### Register
+```
+POST /api/login
+```
+
+
+#### Description
+Registers new user with provided credentials
+
+
+#### Parameters
+
+|Type|Name|Description|Schema|
+|---|---|---|---|
+|**Body**|**user**  <br>*required*|user credentials|[User](#user)|
+
+
+#### Responses
+
+|HTTP Code|Description|Schema|
+|---|---|---|
+|**201**|User was successfully created|none|
+|**400**|Invalid username and/or password|string|
+
+
 ### Login
 ```
 POST /api/login
@@ -128,6 +153,15 @@ Withdraws money from account, returns current balance
 
 
 ## Definitions
+
+<a name="user"></a>
+### User
+
+|Name|Schema|
+|---|---|
+|**username**  <br>*required*|string|
+|**password**  <br>*required*|string|
+
 
 <a name="transaction"></a>
 ### Transaction

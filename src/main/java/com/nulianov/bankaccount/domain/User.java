@@ -1,5 +1,6 @@
 package com.nulianov.bankaccount.domain;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -16,6 +17,7 @@ public class User implements UserDetails {
     @Column(unique=true)
     private String username;
 
+    @NonNull
     private String password;
 
     @OneToMany(mappedBy = "user")

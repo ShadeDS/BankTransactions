@@ -1,7 +1,7 @@
 package com.nulianov.bankaccount.domain;
 
 
-import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransaction;
+import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransactionException;
 import com.nulianov.bankaccount.exception.InsufficientFundsException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,12 +22,12 @@ public class AccountEntityTest {
         account = new Account(new User("john", "doe"), startBalance);
     }
 
-    @Test(expected = IllegalAmountOfMoneyForTransaction.class)
+    @Test(expected = IllegalAmountOfMoneyForTransactionException.class)
     public void depositIllegalAmountOfMoney() {
         account.deposit(illegalAmount);
     }
 
-    @Test(expected = IllegalAmountOfMoneyForTransaction.class)
+    @Test(expected = IllegalAmountOfMoneyForTransactionException.class)
     public void withdrawIllegalAmountOfMoney() {
         account.withdraw(illegalAmount);
     }

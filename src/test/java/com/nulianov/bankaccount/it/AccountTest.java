@@ -124,7 +124,6 @@ public class AccountTest {
     public void makeDeposit() throws Exception {
         String token = auth(userToDeposit.getUsername(), userToDepositPassword);
         String body = new Gson().toJson(deposit);
-        System.out.println(body);
         mvc.perform(
                 MockMvcRequestBuilders.post("/account/deposit")
                         .content(body)
@@ -137,7 +136,6 @@ public class AccountTest {
     public void makeWithdraw() throws Exception {
         String token = auth(userToWithdraw.getUsername(), userToWithdrawPassword);
         String body = new Gson().toJson(withdraw);
-        System.out.println(body);
         mvc.perform(
                 MockMvcRequestBuilders.post("/account/withdraw")
                         .content(body)

@@ -1,14 +1,10 @@
 package com.nulianov.bankaccount.domain;
 
-import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransaction;
+import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransactionException;
 import com.nulianov.bankaccount.exception.InsufficientFundsException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.UUID;
 
 @Entity
@@ -48,18 +44,18 @@ public class Account {
         return balance;
     }
 
-    public BigDecimal deposit(BigDecimal amount) throws IllegalAmountOfMoneyForTransaction {
+    public BigDecimal deposit(BigDecimal amount) throws IllegalAmountOfMoneyForTransactionException {
         if (amount == null || amount.signum() < 0) {
-            throw new IllegalAmountOfMoneyForTransaction(amount);
+            throw new IllegalAmountOfMoneyForTransactionException(amount);
         } else {
             balance = balance.add(amount);
             return balance;
         }
     }
 
-    public BigDecimal withdraw(BigDecimal amount) throws IllegalAmountOfMoneyForTransaction, InsufficientFundsException {
+    public BigDecimal withdraw(BigDecimal amount) throws IllegalAmountOfMoneyForTransactionException, InsufficientFundsException {
         if (amount == null || amount.signum() < 0) {
-            throw new IllegalAmountOfMoneyForTransaction(amount);
+            throw new IllegalAmountOfMoneyForTransactionException(amount);
         } else if (amount.compareTo(balance) > 0) {
             throw new InsufficientFundsException(user.getUsername());
         } else {

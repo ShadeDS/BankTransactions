@@ -3,7 +3,7 @@ package com.nulianov.bankaccount.service.impl;
 import com.nulianov.bankaccount.domain.Account;
 import com.nulianov.bankaccount.domain.TransactionDetails;
 import com.nulianov.bankaccount.domain.User;
-import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransaction;
+import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransactionException;
 import com.nulianov.bankaccount.exception.InsufficientFundsException;
 import com.nulianov.bankaccount.repository.AccountRepository;
 import com.nulianov.bankaccount.repository.TransactionDetailsRepository;
@@ -52,7 +52,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public BigDecimal deposit(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransaction {
+    public BigDecimal deposit(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException {
         logger.debug("Deposit for user {}", username);
         User currentUser = getCurrentUserFromStorage(username);
         Account account = getAccountForUserById(currentUser, transactionDetails.getAccountId());
@@ -68,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public BigDecimal withdraw(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransaction, InsufficientFundsException {
+    public BigDecimal withdraw(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, InsufficientFundsException {
         logger.debug("Withdraw for user {}",  username);
         User currentUser = getCurrentUserFromStorage(username);
         Account account = getAccountForUserById(currentUser, transactionDetails.getAccountId());

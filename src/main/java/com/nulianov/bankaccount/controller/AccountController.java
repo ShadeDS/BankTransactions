@@ -2,7 +2,7 @@ package com.nulianov.bankaccount.controller;
 
 import com.nulianov.bankaccount.domain.TransactionDetails;
 import com.nulianov.bankaccount.domain.User;
-import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransaction;
+import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransactionException;
 import com.nulianov.bankaccount.exception.InsufficientFundsException;
 import com.nulianov.bankaccount.service.AccountService;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class AccountController {
         } catch (EntityNotFoundException e) {
             logger.error("User {} was not found", user.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (IllegalAmountOfMoneyForTransaction e) {
+        } catch (IllegalAmountOfMoneyForTransactionException e) {
             logger.error("Exception occurred while processing deposit for user {}: {}", user.getUsername(), e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
@@ -74,7 +74,7 @@ public class AccountController {
         } catch (EntityNotFoundException e) {
             logger.error("User {} was not found", user.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (IllegalAmountOfMoneyForTransaction e) {
+        } catch (IllegalAmountOfMoneyForTransactionException e) {
             logger.error("Exception occurred while processing deposit for user {}: {}", user.getUsername(), e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         } catch (InsufficientFundsException e) {

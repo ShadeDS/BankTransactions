@@ -3,12 +3,14 @@ package com.nulianov.bankaccount.service;
 import com.nulianov.bankaccount.domain.TransactionDetails;
 import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransactionException;
 import com.nulianov.bankaccount.exception.InsufficientFundsException;
+import com.nulianov.bankaccount.exception.RequestProcessingException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public interface AccountService {
@@ -19,8 +21,9 @@ public interface AccountService {
      * @param accountId id for bank account
      * @return user account balance
      * @throws EntityNotFoundException account was not found in storage
+     * @throws RequestProcessingException internal error occurred
      */
-    BigDecimal getBalance(String username, UUID accountId) throws EntityNotFoundException;
+    BigDecimal getBalance(String username, UUID accountId) throws EntityNotFoundException, RequestProcessingException;
 
     /**
      * If account exists in storage, returns statement as list of transactions,
@@ -29,8 +32,9 @@ public interface AccountService {
      * @param accountId id for bank account
      * @return list of transactions
      * @throws EntityNotFoundException account was not found in storage
+     * @throws RequestProcessingException internal error occurred
      */
-    List<TransactionDetails> getStatement(String username, UUID accountId) throws EntityNotFoundException;
+    List<TransactionDetails> getStatement(String username, UUID accountId) throws EntityNotFoundException, RequestProcessingException;
 
     /**
      * If account exists in storage and amount of money to deposit is correct, processes deposit and returns actual balance,
@@ -39,8 +43,9 @@ public interface AccountService {
      * @return user account balance
      * @throws EntityNotFoundException account was not found in storage
      * @throws IllegalAmountOfMoneyForTransactionException amount of money to deposit is incorrect
+     * @throws RequestProcessingException internal error occurred
      */
-    BigDecimal deposit(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException;
+    BigDecimal deposit(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, RequestProcessingException;
 
     /**
      * If account exists in storage, has sufficient funds and amount of money to withdraw is correct,
@@ -50,14 +55,16 @@ public interface AccountService {
      * @throws EntityNotFoundException account was not found in storage
      * @throws IllegalAmountOfMoneyForTransactionException amount of money to deposit is incorrect
      * @throws InsufficientFundsException account doesn't have sufficient funds to withdraw
+     * @throws RequestProcessingException internal error occurred
      */
-    BigDecimal withdraw(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, InsufficientFundsException;
+    BigDecimal withdraw(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, InsufficientFundsException, RequestProcessingException;
 
     /**
      * Creates new account for provided user
      * @param username name of user
      * @return id of new account
      * @throws EntityNotFoundException user was not found in storage
+     * @throws RequestProcessingException internal error occurred
      */
-    UUID create(String username) throws EntityNotFoundException;
+    UUID create(String username) throws EntityNotFoundException, RequestProcessingException;
 }

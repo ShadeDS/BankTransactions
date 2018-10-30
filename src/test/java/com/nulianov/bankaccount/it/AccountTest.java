@@ -52,6 +52,9 @@ public class AccountTest {
     private static final TransactionDetails deposit = new TransactionDetails(new BigDecimal(amount));
     private static final TransactionDetails withdraw = new TransactionDetails(new BigDecimal(amount));
 
+    private static final TransactionDetails firstWithdraw = new TransactionDetails(new BigDecimal(60));
+    private static final TransactionDetails secondWithdraw = new TransactionDetails(new BigDecimal(50));
+
     @Autowired
     private PasswordEncoder encoder;
 
@@ -87,6 +90,9 @@ public class AccountTest {
         withdraw.setCurrentTime();
         withdraw.setAccountId(accountToWithdraw.getId());
         transactionDetailsRepository.save(withdraw);
+
+        firstWithdraw.setAccountId(accountToWithdraw.getId());
+        secondWithdraw.setAccountId(accountToWithdraw.getId());
     }
 
     @After
@@ -169,6 +175,44 @@ public class AccountTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("0.00"));
 
+    }
+
+    @Test
+    public void synchronization() throws Exception {
+        String token = auth(userToWithdraw.getUsername(), userToWithdrawPassword);
+
+        Thread firstWithdrawThread = new Thread(() -> withdraw(token, firstWithdraw));
+        Thread secondWithdrawThread = new Thread(() -> withdraw(token, secondWithdraw));
+
+
+        firstWithdrawThread.start();
+        secondWithdrawThread.start();
+        firstWithdrawThread.join();
+        secondWithdrawThread.join();
+
+        String result = mvc.perform(MockMvcRequestBuilders.get("/account/balance")
+                .header(AUTHORIZATION, "Bearer " + token)
+                .param("accountId", accountToWithdraw.getId().toString()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        boolean correct = result.equals("40.00") || result.equals("50.00");
+
+        Assert.assertTrue(correct);
+    }
+
+    private void withdraw(String token, TransactionDetails withdraw) {
+        try {
+            String body = new Gson().toJson(withdraw);
+            mvc.perform(
+                    MockMvcRequestBuilders.post("/account/withdraw")
+                            .content(body)
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .header(AUTHORIZATION, "Bearer " + token)
+            );
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 
     private String auth(String username, String password) throws Exception {

@@ -86,6 +86,7 @@ Returns current balance for account
 |---|---|---|
 |**200**|Account was found in storage|BigDecimal|
 |**404**|Account is not present in storage|string|
+|**500**|Internal error occurred|none|
 
 
 ### Get statement
@@ -111,6 +112,7 @@ Returns list of transactions for account
 |---|---|---|
 |**200**|Account was found|List<[Transaction](#transaction)>|
 |**404**|Account is not present in storage|string|
+|**500**|Internal error occurred|none|
 
 
 ### Deposit money to account
@@ -130,6 +132,7 @@ Deposits money into an account, returns current balance
 |**200**|Deposit was completed successfully|BigDecimal|
 |**404**|Account is not present in storage|string|
 |**406**|Illegal amount money to process|string|
+|**500**|Internal error occurred|none|
 
 
 ### Withdraw money from account
@@ -150,6 +153,7 @@ Withdraws money from account, returns current balance
 |**400**|Account has no sufficient funds to withdraw|string|
 |**404**|Account is not present in storage|string|
 |**406**|Illegal amount money to process|string|
+|**500**|Internal error occurred|none|
 
 
 ### Create new account
@@ -168,6 +172,7 @@ Creates new account for current user
 |---|---|---|
 |**201**|Account was created successfully|uuid|
 |**404**|User is not present in storage|string|
+|**500**|Internal error occurred|none|
 
 
 ## Definitions

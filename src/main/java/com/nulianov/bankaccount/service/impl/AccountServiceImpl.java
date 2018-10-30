@@ -5,6 +5,7 @@ import com.nulianov.bankaccount.domain.TransactionDetails;
 import com.nulianov.bankaccount.domain.User;
 import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransactionException;
 import com.nulianov.bankaccount.exception.InsufficientFundsException;
+import com.nulianov.bankaccount.exception.RequestProcessingException;
 import com.nulianov.bankaccount.repository.AccountRepository;
 import com.nulianov.bankaccount.repository.TransactionDetailsRepository;
 import com.nulianov.bankaccount.repository.UserRepository;
@@ -17,6 +18,8 @@ import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 
 
 public class AccountServiceImpl implements AccountService {
@@ -31,18 +34,38 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private TransactionDetailsRepository transactionDetailsRepository;
 
+    @Autowired
+    List<ExecutorService> executors;
+
     @Override
-    public BigDecimal getBalance(String username, UUID accountId) throws EntityNotFoundException {
+    public BigDecimal getBalance(String username, UUID accountId) throws EntityNotFoundException, RequestProcessingException {
         logger.debug("Get balance for user {} and account {}", username, accountId);
+        try {
+            return getCorrespondingExecutor(username).submit(() -> getBalanceInternal(username, accountId)).get();
+        } catch (InterruptedException|ExecutionException e) {
+            logger.error("Error occurred while getting balance for user {}: {}", username, e.getMessage());
+            throw new RequestProcessingException();
+        }
+    }
+
+    private BigDecimal getBalanceInternal(String username, UUID accountId) throws EntityNotFoundException {
         User currentUser = getCurrentUserFromStorage(username);
 
         return getAccountForUserById(currentUser, accountId).getBalance();
     }
 
     @Override
-    public List<TransactionDetails> getStatement(String username, UUID accountId) throws EntityNotFoundException {
+    public List<TransactionDetails> getStatement(String username, UUID accountId) throws EntityNotFoundException, RequestProcessingException {
         logger.debug("Get statement for user {} and account {}", username, accountId);
+        try {
+            return getCorrespondingExecutor(username).submit(() -> getStatementInternal(username, accountId)).get();
+        } catch (InterruptedException|ExecutionException e) {
+            logger.error("Error occurred while getting statement for user {}: {}", username, e.getMessage());
+            throw new RequestProcessingException();
+        }
+    }
 
+    private List<TransactionDetails> getStatementInternal(String username, UUID accountId) throws EntityNotFoundException {
         User currentUser = getCurrentUserFromStorage(username);
         getAccountForUserById(currentUser, accountId);
 
@@ -52,8 +75,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public BigDecimal deposit(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException {
+    public BigDecimal deposit(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, RequestProcessingException {
         logger.debug("Deposit for user {}", username);
+        try {
+            return getCorrespondingExecutor(username).submit(() -> depositInternal(username, transactionDetails)).get();
+        } catch (InterruptedException|ExecutionException e) {
+            logger.error("Error occurred while deposit for user {}: {}", username, e.getMessage());
+            throw new RequestProcessingException();
+        }
+    }
+
+    private BigDecimal depositInternal(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException {
         User currentUser = getCurrentUserFromStorage(username);
         Account account = getAccountForUserById(currentUser, transactionDetails.getAccountId());
 
@@ -68,8 +100,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public BigDecimal withdraw(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, InsufficientFundsException {
+    public BigDecimal withdraw(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, InsufficientFundsException, RequestProcessingException {
         logger.debug("Withdraw for user {}",  username);
+        try {
+            return getCorrespondingExecutor(username).submit(() -> withdrawInternal(username, transactionDetails)).get();
+        } catch (InterruptedException|ExecutionException e) {
+            logger.error("Error occurred while withdraw for user {}: {}", username, e.getMessage());
+            throw new RequestProcessingException();
+        }
+    }
+
+    private BigDecimal withdrawInternal(String username, TransactionDetails transactionDetails) throws EntityNotFoundException, IllegalAmountOfMoneyForTransactionException, InsufficientFundsException {
         User currentUser = getCurrentUserFromStorage(username);
         Account account = getAccountForUserById(currentUser, transactionDetails.getAccountId());
 
@@ -84,11 +125,22 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public UUID create(String username) throws EntityNotFoundException {
+    public UUID create(String username) throws EntityNotFoundException, RequestProcessingException {
+        logger.debug("Create new account for user {}",  username);
+        try {
+            return getCorrespondingExecutor(username).submit(() -> createInternal(username)).get();
+        } catch (InterruptedException|ExecutionException e) {
+            logger.error("Error occurred while creating new account for user {}: {}", username, e.getMessage());
+            throw new RequestProcessingException();
+        }
+    }
+
+    private UUID createInternal(String username) throws EntityNotFoundException {
         User currentUser = getCurrentUserFromStorage(username);
         Account account = new Account(currentUser, new BigDecimal(0));
         accountRepository.save(account);
 
+        logger.debug("New account was created for user {}", username);
         return account.getId();
     }
 
@@ -106,5 +158,7 @@ public class AccountServiceImpl implements AccountService {
                 );
     }
 
-
+    private ExecutorService getCorrespondingExecutor(String username) {
+        return executors.get(username.hashCode() % executors.size());
+    }
 }

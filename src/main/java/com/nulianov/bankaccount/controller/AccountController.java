@@ -4,6 +4,7 @@ import com.nulianov.bankaccount.domain.TransactionDetails;
 import com.nulianov.bankaccount.domain.User;
 import com.nulianov.bankaccount.exception.IllegalAmountOfMoneyForTransactionException;
 import com.nulianov.bankaccount.exception.InsufficientFundsException;
+import com.nulianov.bankaccount.exception.RequestProcessingException;
 import com.nulianov.bankaccount.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,9 @@ public class AccountController {
         } catch (EntityNotFoundException e) {
             logger.error("Account {} was not found", accountId);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (RequestProcessingException e) {
+            logger.error("Internal error occurred {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -47,6 +51,9 @@ public class AccountController {
         } catch (EntityNotFoundException e) {
             logger.error("Account {} was not found", accountId);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (RequestProcessingException e) {
+            logger.error("Internal error occurred {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -62,6 +69,9 @@ public class AccountController {
         } catch (IllegalAmountOfMoneyForTransactionException e) {
             logger.error("Exception occurred while processing deposit for user {}: {}", user.getUsername(), e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        } catch (RequestProcessingException e) {
+            logger.error("Internal error occurred {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -80,6 +90,9 @@ public class AccountController {
         } catch (InsufficientFundsException e) {
             logger.error("Exception occurred while processing deposit for user {}: {}", user.getUsername(), e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (RequestProcessingException e) {
+            logger.error("Internal error occurred {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -91,6 +104,9 @@ public class AccountController {
         } catch (EntityNotFoundException e) {
             logger.error("User {} was not found", user.getUsername());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (RequestProcessingException e) {
+            logger.error("Internal error occurred {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
